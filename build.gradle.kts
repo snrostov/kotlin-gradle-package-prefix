@@ -1,11 +1,8 @@
+import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.gradle.plugins.ide.idea.model.IdeaModule
+import org.jetbrains.gradle.ext.ModuleSettings
+import org.jetbrains.gradle.ext.PackagePrefixContainer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.plugins.ExtensionAware
-import org.gradle.kotlin.dsl.configure
-import org.gradle.plugins.ide.idea.model.IdeaProject
-import org.gradle.plugins.ide.idea.model.*
-import org.jetbrains.gradle.ext.*
-
 
 plugins {
     java
@@ -29,8 +26,7 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-
-fun org.gradle.api.Project.idea(configure: org.gradle.plugins.ide.idea.model.IdeaModel.() -> Unit): Unit =
+fun Project.idea(configure: IdeaModel.() -> Unit): Unit =
     (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("idea", configure)
 
 fun IdeaModule.settings(block: ModuleSettings.() -> Unit) =
@@ -42,10 +38,32 @@ val ModuleSettings.packagePrefix: PackagePrefixContainer
 idea {
     module {
         settings {
-            packagePrefix["src"] = "org.example"
-            packagePrefix["src/main/java"] = "org.example"
-            packagePrefix["src/main/kotlin"] = "org.example"
-            packagePrefix["../other-root/src/main/java"] = "org.example"
+            packagePrefix["main/src"] = "org.example"
+            packagePrefix["test/src"] = "org.example"
+        }
+    }
+}
+
+sourceSets {
+    getByName("main").also {
+        it.java.setSrcDirs(mutableListOf("main/src"))
+        it.resources.setSrcDirs(mutableListOf("main/resources"))
+    }
+    getByName("test").also {
+        it.java.setSrcDirs(mutableListOf("test/src"))
+        it.resources.setSrcDirs(mutableListOf("test/resources"))
+    }
+}
+
+kotlin {
+    sourceSets {
+        getByName("main").also {
+            it.kotlin.setSrcDirs(mutableListOf("main/src"))
+            it.resources.setSrcDirs(mutableListOf("main/resources"))
+        }
+        getByName("test").also {
+            it.kotlin.setSrcDirs(mutableListOf("test/src"))
+            it.resources.setSrcDirs(mutableListOf("test/resources"))
         }
     }
 }
